@@ -1,27 +1,28 @@
 const models = require('../models');
 const Validator = require('fastest-validator');
 
-function createProduct(req, res) {
-    const product = {
+function createItem(req, res) {
+    const items = {
         name: req.body.name,
-        type: req.body.type,
-        icon: req.body.image,
-        description: req.body.description,
+        icon: req.body.icon,
+        color: req.body.color,
         createdBy: req.body.createdBy,
         createdAt: new Date(),
-        deleted: 0
+        deleted: 0,
+        productId: req.body.productId
     }
 
     const schema = {
-        name: {name: "string", optional: false},
-        type: {name: "string", optional: false},
-        icon: {name: "string", optional: true},
+        title: {name: "string", optional: false},
+        icon: {name: "string", optional: false},
+        color: {name: "string", optional: true},
         description: {name: "string", optional: true},
-        createdBy: {name: "string", optional: false},
+        createdBy: {name: "number", optional: false},
+        productId: {name: "number", optional: false},
     }
 
     const v = new Validator();
-    const validationResponse = v.validate(product, schema);
+    const validationResponse = v.validate(items, schema);
 
     if (validationResponse !== true) {
         return res.status(400).json({
@@ -30,9 +31,9 @@ function createProduct(req, res) {
         });
     }
 
-    models.Products.create(product).then(result => {
+    models.Items.create(items).then(result => {
         res.status(200).json({
-            message: "Product created successfully",
+            message: "Item created successfully",
             post: result
         });
     }).catch(error => {
@@ -45,7 +46,7 @@ function createProduct(req, res) {
 
 function getById(req, res) {
     const id = req.params.id;
-    models.Products.findByPk(id).then(result => {
+    models.Items.findByPk(id).then(result => {
         res.status(200).json({
             message: "Fetched Product Successfully",
             post: result
@@ -59,17 +60,7 @@ function getById(req, res) {
 }
 
 function getAll(req, res) {
-    models.Products.findAll().then(result => {
-        models.Items.findAll().then(res => {
-            console.log(res);
-            result.forEach(a => {
-               const items = res.filter(item => item.productId == a.dataValues.id);
-               a.items = items;
-            });
-        }).catch(error =>{
-            console.log(error);
-        });
-        console.log(result);
+    models.Items.findAll().then(result => {
         res.status(200).json({
             message: "Fetched Product Successfully",
             post: result
@@ -82,7 +73,7 @@ function getAll(req, res) {
     });
 }
 
-function updateProduct(req, res) {
+function updateItem(req, res) {
     const id = req.params.id;
     const product = {
         name: req.body.name,
@@ -92,7 +83,7 @@ function updateProduct(req, res) {
         deleted: 0
     }
 
-    models.Products.update(product, {
+    models.Items.update(product, {
         where: {id: id}
     }).then(result => {
         res.status(200).json({
@@ -108,8 +99,8 @@ function updateProduct(req, res) {
 }
 
 module.exports = {
-    createProduct: createProduct,
+    createItem: createItem,
     getById: getById,
     getAll: getAll,
-    updateProduct: updateProduct
+    updateItem: updateItem
 }
